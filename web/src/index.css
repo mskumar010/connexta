@@ -1,0 +1,73 @@
+@import 'tailwindcss';
+
+/* Apple-inspired dark mode colors - Warm, neutral grays */
+@layer base {
+	:root {
+		/* Apple's exact dark mode colors - Warm neutral grays */
+		--color-bg-primary: #1d1d1f; /* Apple's main dark background */
+		--color-bg-secondary: #2c2c2e; /* Apple's secondary (sidebar, cards) */
+		--color-bg-tertiary: #3a3a3c; /* Apple's tertiary (hover, active) */
+		--color-text-primary: #f5f5f7; /* Apple's primary text */
+		--color-text-secondary: #e5e5e7; /* Apple's secondary text */
+		--color-text-tertiary: #98989d; /* Apple's tertiary text */
+		--color-border: #38383a; /* Apple's borders */
+	}
+
+	/* Light mode */
+	:root.light {
+		--color-bg-primary: #ffffff;
+		--color-bg-secondary: #f5f5f7;
+		--color-bg-tertiary: #e5e5e7;
+		--color-text-primary: #1d1d1f;
+		--color-text-secondary: #2c2c2e;
+		--color-text-tertiary: #6e6e73;
+		--color-border: #d2d2d7;
+	}
+
+	/* Dark mode (default) - Apple's exact colors */
+	:root.dark {
+		--color-bg-primary: #1d1d1f;
+		--color-bg-secondary: #2c2c2e;
+		--color-bg-tertiary: #3a3a3c;
+		--color-text-primary: #f5f5f7;
+		--color-text-secondary: #e5e5e7;
+		--color-text-tertiary: #98989d;
+		--color-border: #38383a;
+	}
+
+	body {
+		background-color: var(--color-bg-primary);
+		color: var(--color-text-primary);
+		font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display',
+			'SF Pro Text', 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+		transition: background-color 0.2s ease, color 0.2s ease;
+		-webkit-font-smoothing: antialiased;
+		-moz-osx-font-smoothing: grayscale;
+	}
+
+	/* Smooth theme transitions */
+	* {
+		transition-property: background-color, border-color, color;
+		transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+		transition-duration: 150ms;
+	}
+
+	/* Custom Scrollbar */
+	::-webkit-scrollbar {
+		width: 8px;
+		height: 8px;
+	}
+
+	::-webkit-scrollbar-track {
+		background: transparent;
+	}
+
+	::-webkit-scrollbar-thumb {
+		background: var(--color-bg-tertiary);
+		border-radius: 4px;
+	}
+
+	::-webkit-scrollbar-thumb:hover {
+		background: var(--color-text-tertiary);
+	}
+}
