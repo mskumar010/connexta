@@ -1,199 +1,168 @@
-# Connexta
+<div align="center">
+  <img src="assets/banner.png" alt="Connexta Banner" width="100%" />
 
-A full-stack, real-time chat application with Discord-style rooms, built with modern web technologies.
+# connexta
 
-## 🚀 Tech Stack
+**Connect. Collaborate. Create.**
 
-### Frontend (Web)
+A premium, real-time messaging platform built for the modern web.
 
-- **React 19** + **TypeScript** + **Vite**
-- **Tailwind CSS v4** - Modern utility-first styling
-- **Redux Toolkit** - State management
-- **React Router** - Client-side routing
-- **Socket.IO Client** - Real-time communication
-- **Framer Motion** - Smooth animations
-- **React Virtuoso** - Virtualized message lists
-- **Lucide React** - Icon library
-- **Sonner** - Toast notifications
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue.svg)](https://www.typescriptlang.org/)
+[![React](https://img.shields.io/badge/React-19.0-61dafb.svg)](https://react.dev/)
+[![Node.js](https://img.shields.io/badge/Node.js-18+-green.svg)](https://nodejs.org/)
+[![Vite](https://img.shields.io/badge/Vite-4.0-646CFF.svg)](https://vitejs.dev/)
 
-### Backend (Server)
-
-- **Node.js** + **Express** + **TypeScript**
-- **Socket.IO** - WebSocket server
-- **MongoDB** (Atlas) - Database
-- **JWT** - Authentication (access + refresh tokens)
-
-### Mobile (Future)
-
-- **React Native CLI** (not Expo)
-- **React Navigation**
-- **FlashList** - Virtualized lists
-
-## 📁 Project Structure
-
-```
-connexta/
-├── web/              # React frontend (Vercel)
-├── server/           # Node.js backend (Render)
-├── mobile/           # React Native app (future)
-├── .gitignore        # Monorepo gitignore
-└── README.md         # This file
-```
-
-## 🎯 Features
-
-### Phase 0 - Core (Current)
-
-- ✅ User authentication (email/password)
-- ✅ JWT with refresh tokens
-- ✅ Single room chat
-- ✅ Real-time messaging via Socket.IO
-
-### Phase 1 - Multi-Room
-
-- [ ] Discord-style sidebar with rooms
-- [ ] Join/leave rooms
-- [ ] Room-scoped messages
-- [ ] Typing indicators
-- [ ] Online user presence
-
-### Phase 2 - Polish
-
-- [ ] Message virtualization
-- [ ] Smooth transitions & animations
-- [ ] Skeleton loaders
-- [ ] Toast notifications
-- [ ] Message actions (reply, copy)
-
-### Phase 3 - Reliability
-
-- [ ] Connection state recovery
-- [ ] Missed message sync
-- [ ] Optimistic UI updates
-- [ ] Reconnection handling
-
-### Phase 4 - Mobile
-
-- [ ] React Native client
-- [ ] Shared auth & socket logic
-- [ ] Optimized mobile UI
-
-## 🛠️ Development
-
-### Prerequisites
-
-- Node.js 18+
-- npm or yarn
-- MongoDB Atlas account (for production)
-
-### Getting Started
-
-#### 1. Clone the repository
-
-```bash
-git clone <your-repo-url>
-cd echo-room
-```
-
-#### 2. Install dependencies
-
-**Web:**
-
-```bash
-cd web
-npm install
-npm run dev
-```
-
-**Server:**
-
-```bash
-cd server
-npm install
-npm run dev
-```
-
-#### 3. Environment Variables
-
-**Web** (`web/.env.local`):
-
-```env
-VITE_API_URL=http://localhost:3000
-VITE_SOCKET_URL=http://localhost:3000
-```
-
-**Server** (`server/.env`):
-
-```env
-PORT=3000
-NODE_ENV=development
-MONGODB_URI=mongodb://localhost:27017/echoroom
-JWT_SECRET=your-secret-key
-JWT_REFRESH_SECRET=your-refresh-secret
-CORS_ORIGIN=http://localhost:5173
-```
-
-## 📦 Scripts
-
-### Web
-
-- `npm run dev` - Start dev server (Vite)
-- `npm run build` - Build for production
-- `npm run preview` - Preview production build
-- `npm run lint` - Run ESLint
-
-### Server
-
-- `npm run dev` - Start dev server (node --watch)
-- `npm run build` - Compile TypeScript
-- `npm start` - Start production server
-- `npm run lint` - Run ESLint
-
-## 🏗️ Architecture
-
-### Frontend
-
-- **Redux Toolkit** for global state
-- **RTK Query** for REST API calls
-- **Socket.IO** for real-time events
-- **React Router** for navigation
-- **Feature-based** folder structure
-
-### Backend
-
-- **Express** REST API
-- **Socket.IO** WebSocket server
-- **MongoDB** with Mongoose
-- **JWT** authentication middleware
-- **Modular** route structure
-
-## 🚢 Deployment
-
-### Frontend (Vercel)
-
-1. Connect GitHub repo to Vercel
-2. Set build directory to `web`
-3. Add environment variables
-4. Deploy
-
-### Backend (Render)
-
-1. Create new Web Service
-2. Connect GitHub repo
-3. Set root directory to `server`
-4. Add environment variables
-5. Deploy
-
-## 📝 License
-
-MIT
-
-## 👥 Contributing
-
-This is a personal showcase project. Contributions welcome!
+  <p align="center">
+    <a href="#-features">Features</a> •
+    <a href="#-tech-stack">Tech Stack</a> •
+    <a href="#-getting-started">Getting Started</a> •
+    <a href="#-architecture">Architecture</a>
+  </p>
+</div>
 
 ---
 
-**Built with ❤️ for showcasing modern full-stack development**
+## 📸 Overview
 
-# connexta
+<div align="center">
+  <img src="assets/mockup.png" alt="Connexta UI Mockup" width="800" style="border-radius: 10px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);" />
+</div>
+
+<br />
+
+**Connexta** is a next-generation chat application designed to bridge the gap between simple messaging and complex community platforms. Influenced by the best features of Discord and Slack, it offers a seamless, real-time communication experience with a focus on design, performance, and scalability.
+
+Unlike traditional chat apps, Connexta prioritizes **visual excellence** and **responsiveness**, ensuring that every interaction—from sending a message to joining a room—feels instant and fluid.
+
+## ✨ Features
+
+| Feature                    | Description                                                                                   |
+| :------------------------- | :-------------------------------------------------------------------------------------------- |
+| **💬 Real-time Messaging** | Instant message delivery powered by Socket.IO with sub-millisecond latency.                   |
+| **🏙️ Room Discovery**      | Explore public communities or create your own private rooms.                                  |
+| **🤝 Direct Messages**     | Private, secure one-on-one conversations with connection requests.                            |
+| **🎨 Modern UI/UX**        | A stunning "Apple-inspired" dark mode with glassmorphism and smooth framer-motion animations. |
+| **📱 Responsive Design**   | Fully optimized for desktop, tablet, and mobile browsers.                                     |
+| **🔒 Secure Auth**         | Robust authentication using JWT with automatic refresh token rotation.                        |
+| **📍 Map Integration**     | (Beta) Locate friends on a live map interface.                                                |
+| **⚡ Smart Wake-up**       | Intelligent handling of server sleep states for free-tier hosting.                            |
+
+## 🛠 Tech Stack
+
+Built with a commitment to modern standards and type safety.
+
+### **Frontend**
+
+- **Framework**: React 19 + TypeScript
+- **Build Tool**: Vite
+- **Styling**: Tailwind CSS v4 + native CSS variables
+- **State Management**: Redux Toolkit (RTK) + RTK Query
+- **Real-time**: Socket.IO Client
+- **Icons**: Lucide React
+
+### **Backend**
+
+- **Runtime**: Node.js
+- **Framework**: Express.js
+- **Database**: MongoDB (Mongoose ODM)
+- **WebSockets**: Socket.IO
+- **Auth**: JWT (Access + Refresh Tokens)
+
+## 🚀 Getting Started
+
+Follow these steps to get a local copy up and running.
+
+### Prerequisites
+
+- Node.js (v18 or higher)
+- npm or yarn
+- MongoDB (Local or Atlas URI)
+
+### Installation
+
+1.  **Clone the repo**
+
+    ```bash
+    git clone https://github.com/yourusername/connexta.git
+    cd connexta
+    ```
+
+2.  **Install Dependencies** (Root)
+
+    ```bash
+    # Install dependencies for both web and server
+    cd web && npm install && cd ../server && npm install && cd ..
+    ```
+
+3.  **Configure Environment**
+
+    - **Server**: Create `server/.env`
+      ```env
+      PORT=3000
+      NODE_ENV=development
+      MONGO_URI=mongodb://localhost:27017/connexta
+      JWT_SECRET=your_super_secret_key
+      CORS_ORIGIN=http://localhost:5173
+      ```
+    - **Web**: Create `web/.env.development`
+      ```env
+      VITE_API_URL=http://localhost:3000
+      ```
+
+4.  **Run Development Servers**
+
+    Open two terminal tabs:
+
+    - **Terminal 1 (Server)**
+      ```bash
+      cd server
+      npm run dev
+      ```
+    - **Terminal 2 (Web)**
+      ```bash
+      cd web
+      npm run dev
+      ```
+
+5.  **Build for Production**
+
+    ```bash
+    # Build Web
+    cd web
+    npm run build
+
+    # Build Server
+    cd server
+    npm run build
+    ```
+
+## 🏗 Architecture
+
+The project follows a **Monorepo-style** structure for clear separation of concerns:
+
+```
+connexta/
+├── web/                 # React Frontend
+│   ├── src/
+│   │   ├── api/         # RTK Query definitions
+│   │   ├── features/    # Feature-based components (chat, auth, rooms)
+│   │   ├── pages/       # Route pages
+│   │   └── store/       # Redux store setup
+├── server/              # Express Backend
+│   ├── src/
+│   │   ├── models/      # Mongoose Schemas
+│   │   ├── routes/      # REST API Routes
+│   │   └── socket/      # Socket.IO Event Handlers
+└── assets/              # Project images and resources
+```
+
+## 📝 License
+
+Distributed under the MIT License. See `LICENSE` for more information.
+
+---
+
+<p align="center">
+  Built with ❤️ by the Connexta Team
+</p>
