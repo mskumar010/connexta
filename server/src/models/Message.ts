@@ -1,12 +1,16 @@
 import mongoose, { Schema } from "mongoose";
 
 export interface IMessage {
-  _id: string;
-  _id: string;
+  _id: string; // duplicate removed
   conversationId: string; // Conversation ID
   roomId?: string; // Optional, kept for backward compatibility or room-specific logic
   senderId: string; // User ID
   text: string;
+  type: "text" | "location";
+  location?: {
+    latitude: number;
+    longitude: number;
+  };
   seq: number; // Sequential number for recovery
   isSystemMessage?: boolean;
   parentId?: string;
@@ -20,7 +24,7 @@ const messageSchema = new Schema<IMessage>(
     conversationId: {
       type: Schema.Types.ObjectId,
       ref: "Conversation",
-      required: true,
+      required: false,
       index: true,
     } as any,
     roomId: {
@@ -37,6 +41,15 @@ const messageSchema = new Schema<IMessage>(
       type: String,
       required: true,
       trim: true,
+    },
+    type: {
+      type: String,
+      enum: ["text", "location"],
+      default: "text",
+    },
+    location: {
+      latitude: Number,
+      longitude: Number,
     },
     seq: {
       type: Number,

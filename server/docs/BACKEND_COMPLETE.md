@@ -2,11 +2,12 @@
 
 ## Overview
 
-Full-featured backend server for EchoRoom with MongoDB, JWT authentication, Socket.IO real-time communication, and connection recovery.
+Full-featured backend server for Connexta with MongoDB, JWT authentication, Socket.IO real-time communication, and connection recovery.
 
 ## Architecture
 
 ### Tech Stack
+
 - **Express 5** - Web framework
 - **TypeScript** - Type safety
 - **MongoDB + Mongoose** - Database and ODM
@@ -45,6 +46,7 @@ server/src/
 ### 1. Database Models ✅
 
 **User Model:**
+
 - Email (unique, lowercase)
 - Password hash (bcrypt)
 - Display name
@@ -53,6 +55,7 @@ server/src/
 - Timestamps
 
 **Room Model:**
+
 - Name
 - Slug (unique, auto-generated)
 - Description (optional)
@@ -61,6 +64,7 @@ server/src/
 - Indexes for performance
 
 **Message Model:**
+
 - Room reference
 - Sender reference
 - Text content
@@ -72,6 +76,7 @@ server/src/
 ### 2. Authentication ✅
 
 **Endpoints:**
+
 - `POST /auth/register` - User registration
 - `POST /auth/login` - User login
 - `POST /auth/refresh` - Token refresh
@@ -79,6 +84,7 @@ server/src/
 - `GET /auth/me` - Get current user
 
 **Features:**
+
 - JWT access tokens (15min expiry)
 - JWT refresh tokens (7 days expiry)
 - HTTP-only cookies for refresh tokens
@@ -89,11 +95,13 @@ server/src/
 ### 3. Room Management ✅
 
 **Endpoints:**
+
 - `GET /rooms` - Get all rooms
 - `GET /rooms/:id` - Get single room (by ID or slug)
 - `POST /rooms` - Create new room
 
 **Features:**
+
 - Auto-generated slugs from names
 - Slug uniqueness validation
 - Room creator tracking
@@ -102,10 +110,12 @@ server/src/
 ### 4. Message Management ✅
 
 **Endpoints:**
+
 - `GET /rooms/:roomId/messages` - Get room messages
   - Query params: `limit`, `before` (pagination)
 
 **Features:**
+
 - Pagination support
 - Sequential numbering for recovery
 - Sender population
@@ -114,6 +124,7 @@ server/src/
 ### 5. Socket.IO Real-Time ✅
 
 **Events Handled:**
+
 - `auth:identify` - Socket authentication
 - `room:join` - Join room, get recent messages
 - `room:leave` - Leave room
@@ -123,6 +134,7 @@ server/src/
 - `connection:recover` - Request missed messages
 
 **Events Emitted:**
+
 - `auth:ok` - Authentication success
 - `auth:error` - Authentication failure
 - `room:joined` - Room join confirmation with messages
@@ -133,6 +145,7 @@ server/src/
 - `connection:missed` - Missed messages on reconnect
 
 **Features:**
+
 - JWT authentication on socket connection
 - Room-based message broadcasting
 - Sequence number tracking
@@ -142,6 +155,7 @@ server/src/
 ### 6. Connection Recovery ✅
 
 **Implementation:**
+
 - Server tracks sequence numbers per room
 - Client sends `lastSeenSeq` on reconnect
 - Server queries messages with `seq > lastSeenSeq`
@@ -151,6 +165,7 @@ server/src/
 ### 7. Error Handling ✅
 
 **Features:**
+
 - Custom `AppError` class
 - Centralized error handler middleware
 - Proper HTTP status codes
@@ -164,7 +179,7 @@ Create a `.env` file with:
 ```env
 PORT=3000
 NODE_ENV=development
-MONGODB_URI=mongodb://localhost:27017/echoroom
+MONGODB_URI=mongodb://localhost:27017/connexta
 CORS_ORIGIN=http://localhost:5173
 JWT_SECRET=your-secret-key
 JWT_REFRESH_SECRET=your-refresh-secret-key
@@ -175,6 +190,7 @@ JWT_REFRESH_EXPIRES_IN=7d
 ## API Endpoints
 
 ### Authentication
+
 - `POST /auth/register` - Register new user
 - `POST /auth/login` - Login user
 - `POST /auth/refresh` - Refresh access token
@@ -182,17 +198,20 @@ JWT_REFRESH_EXPIRES_IN=7d
 - `GET /auth/me` - Get current user (protected)
 
 ### Rooms
+
 - `GET /rooms` - Get all rooms (protected)
 - `GET /rooms/:id` - Get room by ID or slug (protected)
 - `POST /rooms` - Create room (protected)
 
 ### Messages
+
 - `GET /rooms/:roomId/messages` - Get room messages (protected)
   - Query: `?limit=50&before=messageId`
 
 ## Socket.IO Events
 
 ### Client → Server
+
 - `auth:identify` - Authenticate socket
 - `room:join` - Join room
 - `room:leave` - Leave room
@@ -202,6 +221,7 @@ JWT_REFRESH_EXPIRES_IN=7d
 - `connection:recover` - Request missed messages
 
 ### Server → Client
+
 - `auth:ok` - Authentication success
 - `auth:error` - Authentication error
 - `room:joined` - Room joined with messages
@@ -234,20 +254,23 @@ JWT_REFRESH_EXPIRES_IN=7d
 To test the server:
 
 1. **Start MongoDB:**
+
    ```bash
    # Local MongoDB
    mongod
-   
+
    # Or use MongoDB Atlas connection string
    ```
 
 2. **Set environment variables:**
+
    ```bash
    cp .env.example .env
    # Edit .env with your values
    ```
 
 3. **Start server:**
+
    ```bash
    npm run dev
    ```
@@ -281,4 +304,3 @@ To test the server:
 **Status:** ✅ Backend Complete
 **Build:** ✅ Passing
 **Ready for:** Integration with frontend
-

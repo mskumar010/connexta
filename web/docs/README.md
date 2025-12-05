@@ -1,6 +1,6 @@
-# Web Documentation
+# Connexta Web Documentation
 
-Web-specific documentation for EchoRoom frontend.
+Web-specific documentation for Connexta frontend.
 
 ## 📚 Documentation Files
 
@@ -18,4 +18,3 @@ Web-specific documentation for EchoRoom frontend.
 ---
 
 **Last Updated:** Phase 2 Complete
-

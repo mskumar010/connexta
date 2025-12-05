@@ -1,10 +1,10 @@
-# EchoRoom Project Overview
+# Connexta Project Overview
 
 ## 🚀 Project Identity
 
-**EchoRoom** is a full-stack, real-time chat application designed to deliver a premium, Discord-like experience with a focus on modern aesthetics and performance. It is built to showcase advanced full-stack development capabilities, featuring real-time communication, robust authentication, and a polished user interface.
+**Connexta** is a full-stack, real-time messaging application designed to deliver a premium, WhatsApp-like experience with a focus on Direct Messages (DMs) and modern aesthetics. It is built to showcase advanced full-stack development capabilities, featuring real-time communication, robust authentication, and a polished user interface.
 
-**Tagline:** A modern, real-time chat experience.
+**Tagline:** Connect instantly, chat simply.
 
 ---
 
@@ -23,14 +23,13 @@
   - Real-time connection state management (Online/Offline/Reconnecting).
   - Automatic recovery of missed messages upon reconnection.
 - **User Interface**:
-  - **Discord-Style Layout**: Sidebar for room navigation, main chat area, and user details.
+  - **WhatsApp-Style Layout**: Sidebar for conversation list, main chat area for DMs.
   - **Premium Aesthetics**: "Apple-inspired" dark mode using neutral grays (no blue tints).
   - **Optimistic UI**: Immediate feedback for user actions before server confirmation.
   - **Threaded Messaging**: Reply to messages in threads.
   - **Toast Notifications**: Non-intrusive alerts for success and error states.
-- **Room Management**:
-  - Browse and switch between multiple chat rooms.
-  - Welcome room for new user onboarding.
+  - **Direct Messages**: Primary focus on 1-1 conversations.
+  - **Room Discovery**: Browse and join public chat rooms via a dedicated "Discover" section.
 
 ### Planned Features (Phase 4 & Future)
 

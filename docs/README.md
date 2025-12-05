@@ -1,4 +1,4 @@
-# EchoRoom Documentation
+# Connexta Documentation
 
 ## 📁 Documentation Structure
 

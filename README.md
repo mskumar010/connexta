@@ -1,4 +1,4 @@
-# EchoRoom
+# Connexta
 
 A full-stack, real-time chat application with Discord-style rooms, built with modern web technologies.
 
@@ -32,7 +32,7 @@ A full-stack, real-time chat application with Discord-style rooms, built with mo
 ## 📁 Project Structure
 
 ```
-echo-room/
+connexta/
 ├── web/              # React frontend (Vercel)
 ├── server/           # Node.js backend (Render)
 ├── mobile/           # React Native app (future)
@@ -195,4 +195,5 @@ This is a personal showcase project. Contributions welcome!
 ---
 
 **Built with ❤️ for showcasing modern full-stack development**
+
 # connexta

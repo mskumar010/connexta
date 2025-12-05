@@ -1,6 +1,6 @@
-# EchoRoom Server
+# Connexta Server
 
-Backend server for EchoRoom chat application.
+Backend server for Connexta chat application.
 
 > 📚 **Documentation:** See [`docs/`](./docs/) folder for detailed documentation.
 
@@ -20,11 +20,13 @@ npm install
 ## 🔧 Configuration
 
 1. Copy `.env.example` to `.env`:
+
 ```bash
 cp .env.example .env
 ```
 
 2. Update `.env` with your configuration:
+
 - `PORT` - Server port (default: 3000)
 - `CORS_ORIGIN` - Frontend URL (default: http://localhost:5173)
 - `MONGODB_URI` - MongoDB connection string
@@ -49,6 +51,7 @@ npm start
 ## 📡 Socket.IO Events
 
 ### Client → Server
+
 - `auth:identify` - Authenticate with JWT
 - `room:join` - Join a room
 - `room:leave` - Leave a room
@@ -57,6 +60,7 @@ npm start
 - `typing:stop` - Stop typing indicator
 
 ### Server → Client
+
 - `auth:ok` - Authentication successful
 - `auth:error` - Authentication failed
 - `room:joined` - Successfully joined room
@@ -104,4 +108,3 @@ The server is designed to be deployed on **Render** or similar platforms.
 1. Set environment variables in your hosting platform
 2. Build: `npm run build`
 3. Start: `npm start`
-

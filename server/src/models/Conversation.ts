@@ -5,6 +5,8 @@ export interface IConversation extends Document {
   lastMessage?: string; // Message ID
   lastMessageAt?: Date;
   type: "dm" | "room";
+  status: "pending" | "accepted" | "rejected";
+  initiatorId?: string;
   roomId?: string; // If type is 'room'
   createdAt: Date;
   updatedAt: Date;
@@ -36,6 +38,15 @@ const conversationSchema = new Schema<IConversation>(
     roomId: {
       type: Schema.Types.ObjectId,
       ref: "Room",
+    },
+    status: {
+      type: String,
+      enum: ["pending", "accepted", "rejected"],
+      default: "accepted", // Default accepted for backward compatibility with Rooms/Old DMs
+    },
+    initiatorId: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
     },
   },
   {

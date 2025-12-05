@@ -5,11 +5,15 @@ import { addMessage, setTypingUser } from "@/features/chat/chatSlice";
 import {
   updateConversation,
   addConversation,
+  updateConversationStatus,
 } from "@/features/conversations/conversationsSlice";
 import type { UIMessage, Conversation } from "@/types";
+import { conversationsApi } from "@/api/conversationsApi";
+
+import type { AppDispatch } from "@/app/store";
 
 export const useConversationSocket = () => {
-  const dispatch = useDispatch();
+  const dispatch = useDispatch<AppDispatch>();
   const socket = useSocket();
 
   useEffect(() => {
@@ -30,6 +34,19 @@ export const useConversationSocket = () => {
 
     const handleConversationCreated = (conversation: Conversation) => {
       dispatch(addConversation(conversation));
+      // Update RTK Query Cache
+      dispatch(
+        conversationsApi.util.updateQueryData(
+          "getConversations" as any,
+          undefined,
+          (draft: any) => {
+            const exists = draft.find((c: any) => c._id === conversation._id);
+            if (!exists) {
+              draft.unshift(conversation);
+            }
+          }
+        )
+      );
     };
 
     const handleConversationUpdated = (data: {
@@ -54,16 +71,48 @@ export const useConversationSocket = () => {
       );
     };
 
+    const handleConversationAccepted = (conversation: Conversation) => {
+      dispatch(
+        updateConversationStatus({
+          conversationId: conversation._id,
+          status: "accepted",
+          conversation,
+        })
+      );
+
+      // Update RTK Query Cache
+      dispatch(
+        conversationsApi.util.updateQueryData(
+          "getConversations" as any,
+          undefined,
+          (draft: any) => {
+            const index = draft.findIndex(
+              (c: any) => c._id === conversation._id
+            );
+            if (index !== -1) {
+              draft[index] = conversation;
+            } else {
+              draft.unshift(conversation);
+            }
+          }
+        )
+      );
+    };
+
     socket.on("message:dm:received", handleMessageReceived);
     socket.on("conversation:created", handleConversationCreated);
     socket.on("conversation:updated", handleConversationUpdated);
     socket.on("conversation:typing", handleTyping);
+    socket.on("conversation:new_request", handleConversationCreated);
+    socket.on("conversation:accepted", handleConversationAccepted);
 
     return () => {
       socket.off("message:dm:received", handleMessageReceived);
       socket.off("conversation:created", handleConversationCreated);
       socket.off("conversation:updated", handleConversationUpdated);
       socket.off("conversation:typing", handleTyping);
+      socket.off("conversation:new_request", handleConversationCreated);
+      socket.off("conversation:accepted", handleConversationAccepted);
     };
   }, [dispatch, socket]);
 };

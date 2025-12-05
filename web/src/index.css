@@ -1,73 +1,110 @@
-@import 'tailwindcss';
+@import "tailwindcss";
 
-/* Apple-inspired dark mode colors - Warm, neutral grays */
 @layer base {
-	:root {
-		/* Apple's exact dark mode colors - Warm neutral grays */
-		--color-bg-primary: #1d1d1f; /* Apple's main dark background */
-		--color-bg-secondary: #2c2c2e; /* Apple's secondary (sidebar, cards) */
-		--color-bg-tertiary: #3a3a3c; /* Apple's tertiary (hover, active) */
-		--color-text-primary: #f5f5f7; /* Apple's primary text */
-		--color-text-secondary: #e5e5e7; /* Apple's secondary text */
-		--color-text-tertiary: #98989d; /* Apple's tertiary text */
-		--color-border: #38383a; /* Apple's borders */
-	}
+  :root {
+    /* Base Variables (Light Mode Default) */
+    --color-bg-primary: #f8f9fc;
+    --color-bg-secondary: #ffffff;
+    --color-bg-tertiary: #f1f5f9;
 
-	/* Light mode */
-	:root.light {
-		--color-bg-primary: #ffffff;
-		--color-bg-secondary: #f5f5f7;
-		--color-bg-tertiary: #e5e5e7;
-		--color-text-primary: #1d1d1f;
-		--color-text-secondary: #2c2c2e;
-		--color-text-tertiary: #6e6e73;
-		--color-border: #d2d2d7;
-	}
+    --color-text-primary: #1e293b;
+    --color-text-secondary: #64748b;
+    --color-text-tertiary: #94a3b8;
 
-	/* Dark mode (default) - Apple's exact colors */
-	:root.dark {
-		--color-bg-primary: #1d1d1f;
-		--color-bg-secondary: #2c2c2e;
-		--color-bg-tertiary: #3a3a3c;
-		--color-text-primary: #f5f5f7;
-		--color-text-secondary: #e5e5e7;
-		--color-text-tertiary: #98989d;
-		--color-border: #38383a;
-	}
+    --color-border: #e2e8f0; /* Slate-200 */
 
-	body {
-		background-color: var(--color-bg-primary);
-		color: var(--color-text-primary);
-		font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display',
-			'SF Pro Text', 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-		transition: background-color 0.2s ease, color 0.2s ease;
-		-webkit-font-smoothing: antialiased;
-		-moz-osx-font-smoothing: grayscale;
-	}
+    --color-brand-primary: #0d7377;
+    --color-brand-accent: #00a884; /* Darker Cyan for Light Mode Contrast */
 
-	/* Smooth theme transitions */
-	* {
-		transition-property: background-color, border-color, color;
-		transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-		transition-duration: 150ms;
-	}
+    /* Scrollbars */
+    --scrollbar-track: transparent;
+    --scrollbar-thumb: #cbd5e1;
+    --scrollbar-thumb-hover: #94a3b8;
+  }
 
-	/* Custom Scrollbar */
-	::-webkit-scrollbar {
-		width: 8px;
-		height: 8px;
-	}
+  .dark {
+    /* Dark Mode (High Contrast / Professional) */
+    --color-bg-primary: #0f0f0f;
+    --color-bg-secondary: #1e1e1e;
+    --color-bg-tertiary: #2a2a2a;
 
-	::-webkit-scrollbar-track {
-		background: transparent;
-	}
+    --color-text-primary: #f1f5f9;
+    --color-text-secondary: #aaaaaa;
+    --color-text-tertiary: #717171;
 
-	::-webkit-scrollbar-thumb {
-		background: var(--color-bg-tertiary);
-		border-radius: 4px;
-	}
+    --color-border: #333333; /* Dark Border */
 
-	::-webkit-scrollbar-thumb:hover {
-		background: var(--color-text-tertiary);
-	}
+    --color-brand-primary: #0d7377;
+    --color-brand-accent: #14ffec; /* Bright Cyan for Dark Mode */
+
+    /* Scrollbars */
+    --scrollbar-track: transparent;
+    --scrollbar-thumb: #404040;
+    --scrollbar-thumb-hover: #525252;
+  }
+
+  body {
+    background-color: var(--color-bg-primary);
+    color: var(--color-text-primary);
+    font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+      "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    transition: background-color 0.3s ease, color 0.3s ease;
+    /* Custom Scrollbar Global */
+    overflow-y: overlay;
+  }
+
+  /* Reset glows */
+  * {
+    box-shadow: none;
+    border-color: var(--color-border); /* Global border color default */
+  }
+  /* But allow explicit shadows */
+  .shadow-sm {
+    box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  }
+  .shadow,
+  .shadow-md {
+    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  }
+  .shadow-lg {
+    box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1),
+      0 4px 6px -4px rgb(0 0 0 / 0.1);
+  }
+  .shadow-xl {
+    box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1),
+      0 8px 10px -6px rgb(0 0 0 / 0.1);
+  }
+  .shadow-2xl {
+    box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.25);
+  }
+
+  /* --- Custom Scrollbar Styling --- */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: var(--scrollbar-track);
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: var(--scrollbar-thumb);
+    border-radius: 99px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--scrollbar-thumb-hover);
+  }
+
+  /* Leaflet Popups override */
+  .glass-popup .leaflet-popup-content-wrapper {
+    background: var(--color-bg-secondary);
+    color: var(--color-text-primary);
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  }
+  .glass-popup .leaflet-popup-tip {
+    background: var(--color-bg-secondary);
+  }
 }

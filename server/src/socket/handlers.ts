@@ -2,7 +2,7 @@ import type { Server } from "socket.io";
 import { Message } from "../models/Message";
 import { Room } from "../models/Room";
 import { User } from "../models/User";
-import { User } from "../models/User";
+
 import { Conversation } from "../models/Conversation";
 import type { AuthenticatedSocket } from "./auth";
 
@@ -22,6 +22,7 @@ export async function initializeSequences(): Promise<void> {
   const sequences = new Map<string, number>();
 
   for (const msg of messages) {
+    if (!msg.roomId) continue;
     const roomId = msg.roomId.toString();
     if (!sequences.has(roomId)) {
       sequences.set(roomId, msg.seq);
@@ -54,12 +55,41 @@ export function setupSocketHandlers(io: Server): void {
         const payload = verifyAccessToken(data.token);
         socket.userId = payload.userId;
         socket.userEmail = payload.email;
+        // Store in data for fetchSockets() access
+        socket.data.userId = payload.userId;
 
         socket.emit("auth:ok", { userId: payload.userId });
         console.log(`Socket ${socket.id} authenticated as ${payload.userId}`);
       } catch (error) {
         socket.emit("auth:error", { message: "Authentication failed" });
         console.error(`Socket ${socket.id} auth failed:`, error);
+      }
+    });
+
+    // Handle conversation joining
+    socket.on("conversation:join", async (data: { conversationId: string }) => {
+      try {
+        if (!socket.userId) return;
+        const { conversationId } = data;
+
+        const conversation = await Conversation.findById(conversationId);
+        if (!conversation) {
+          socket.emit("error", { message: "Conversation not found" });
+          return;
+        }
+
+        if (conversation.participants.includes(socket.userId)) {
+          socket.join(`conversation:${conversationId}`);
+          console.log(
+            `Socket ${socket.id} joined conversation: ${conversationId}`
+          );
+        } else {
+          socket.emit("error", {
+            message: "Not authorized to join this conversation",
+          });
+        }
+      } catch (error) {
+        console.error("Error joining conversation:", error);
       }
     });
 
@@ -113,7 +143,7 @@ export function setupSocketHandlers(io: Server): void {
             const sender = msg.senderId as any;
             return {
               id: msg._id.toString(),
-              roomId: msg.roomId.toString(),
+              roomId: msg.roomId?.toString() ?? "",
               sender: {
                 id:
                   typeof sender === "object" && sender._id
@@ -229,7 +259,7 @@ export function setupSocketHandlers(io: Server): void {
 
           const messageData = {
             id: message._id.toString(),
-            roomId: message.roomId.toString(),
+            roomId: message.roomId!.toString(),
             sender: {
               id: user._id.toString(),
               displayName: user.displayName,
@@ -329,7 +359,7 @@ export function setupSocketHandlers(io: Server): void {
                 const sender = msg.senderId as any;
                 return {
                   id: msg._id.toString(),
-                  roomId: msg.roomId.toString(),
+                  roomId: msg.roomId?.toString() ?? "",
                   sender: {
                     id:
                       typeof sender === "object" && sender._id
@@ -404,7 +434,7 @@ export function setupSocketHandlers(io: Server): void {
 
           // Notify both participants
           const participantSocket = (await io.fetchSockets()).find(
-            (s: any) => s.userId === participantId
+            (s: any) => s.data.userId === participantId
           );
 
           socket.emit("conversation:created", populatedConversation);
@@ -419,7 +449,6 @@ export function setupSocketHandlers(io: Server): void {
         }
       }
     );
-
     // Handle DM sending
     socket.on(
       "message:dm",
@@ -433,10 +462,16 @@ export function setupSocketHandlers(io: Server): void {
           const { conversationId, text, tempId } = data;
 
           const conversation = await Conversation.findById(conversationId);
-          if (!conversation) return;
+          if (!conversation) {
+            socket.emit("error", { message: "Conversation not found" });
+            return;
+          }
 
           // Verify participation
-          if (!conversation.participants.includes(socket.userId)) return;
+          if (!conversation.participants.includes(socket.userId)) {
+            socket.emit("error", { message: "Not a participant" });
+            return;
+          }
 
           const message = new Message({
             conversationId,
@@ -453,6 +488,35 @@ export function setupSocketHandlers(io: Server): void {
           conversation.lastMessageAt = message.createdAt;
           await conversation.save();
 
+          // RESURRECTION LOGIC: Ensure conversation is in both users' lists
+          // If User A disconnected, this will add it back when User B messages
+          const participants = conversation.participants;
+          for (const pid of participants) {
+            const result = await User.updateOne(
+              { _id: pid, conversations: { $ne: conversation._id as any } },
+              { $push: { conversations: conversation._id } }
+            );
+
+            // If we added it back, notify the user so it appears in sidebar immediately
+            if (result.modifiedCount > 0) {
+              const populatedConv = await Conversation.findById(
+                conversation._id
+              )
+                .populate(
+                  "participants",
+                  "displayName avatarUrl email connectionId"
+                )
+                .populate("lastMessage");
+
+              const targetSocket = (await io.fetchSockets()).find(
+                (s: any) => s.data.userId === pid.toString()
+              );
+              if (targetSocket) {
+                targetSocket.emit("conversation:new_request", populatedConv);
+              }
+            }
+          }
+
           const messageData = {
             id: message._id.toString(),
             conversationId: message.conversationId.toString(),
@@ -464,22 +528,21 @@ export function setupSocketHandlers(io: Server): void {
             text: message.text,
             createdAt: message.createdAt.toISOString(),
           };
+          // Emit to the conversation room (exclude sender)
+          socket
+            .to(`conversation:${conversationId}`)
+            .emit("message:dm:received", messageData);
 
-          // Notify participants
-          conversation.participants.forEach(async (participantId) => {
-            const sockets = await io.fetchSockets();
-            const participantSocket = sockets.find(
-              (s: any) => s.userId === participantId
-            );
-            if (participantSocket) {
-              participantSocket.emit("message:dm:received", messageData);
-              participantSocket.emit("conversation:updated", {
-                conversationId,
-                lastMessage: messageData,
-                lastMessageAt: message.createdAt,
-              });
-            }
-          });
+          // Also emit conversation update to the room so lists update (exclude sender if possible, or handle on client)
+          // Actually, conversation:updated might be useful for sender too if it carries "lastMessage" data that settles the conversation state?
+          // But sender optimistically updates. Let's exclude sender to avoid double-update flicker.
+          socket
+            .to(`conversation:${conversationId}`)
+            .emit("conversation:updated", {
+              conversationId,
+              lastMessage: messageData,
+              lastMessageAt: message.createdAt,
+            });
 
           // Ack to sender
           socket.emit("message:ack", {
@@ -488,6 +551,7 @@ export function setupSocketHandlers(io: Server): void {
           });
         } catch (error) {
           console.error(`Error in message:dm:`, error);
+          socket.emit("error", { message: "Failed to send message" });
         }
       }
     );
@@ -507,7 +571,7 @@ export function setupSocketHandlers(io: Server): void {
             if (participantId !== socket.userId) {
               const sockets = await io.fetchSockets();
               const participantSocket = sockets.find(
-                (s: any) => s.userId === participantId
+                (s: any) => s.data.userId === participantId
               );
               if (participantSocket) {
                 participantSocket.emit("conversation:typing", {

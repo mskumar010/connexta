@@ -1,6 +1,6 @@
-# EchoRoom Web
+# Connexta Web
 
-React frontend for EchoRoom - a real-time chat application with Discord-style rooms.
+React frontend for Connexta - a real-time chat application with Discord-style rooms.
 
 > 📚 **Documentation:** See [`docs/`](./docs/) folder for detailed documentation.
 
@@ -140,25 +140,30 @@ npm run preview
 ## 📦 Key Dependencies
 
 ### Core
+
 - `react@^19.2.0` - React library
 - `react-dom@^19.2.0` - React DOM
 - `typescript@~5.9.3` - TypeScript
 
 ### State & Routing
+
 - `@reduxjs/toolkit@^2.11.0` - Redux Toolkit
 - `react-redux@^9.2.0` - React Redux bindings
 - `react-router-dom@^7.10.0` - React Router
 
 ### Real-time
+
 - `socket.io-client@^4.8.1` - Socket.IO client
 
 ### UI & Animations
+
 - `framer-motion@^12.23.25` - Animation library
 - `lucide-react@^0.555.0` - Icon library
 - `react-virtuoso@^4.16.1` - Virtualized lists
 - `sonner@^2.0.7` - Toast notifications
 
 ### Utilities
+
 - `clsx@^2.1.1` - Class name utility
 - `tailwind-merge@^3.4.0` - Tailwind class merging
 
@@ -213,12 +218,14 @@ VITE_SOCKET_URL=https://your-backend.render.com
 ## 📝 Development Phases
 
 ### Phase 0 - Setup ✅
+
 - [x] Project setup with Vite + React + TypeScript
 - [x] Tailwind CSS v4 configuration
 - [x] All dependencies installed
 - [x] Basic folder structure
 
 ### Phase 1 - Core UI (Current)
+
 - [ ] Redux store setup
 - [ ] React Router configuration
 - [ ] Main layout (Sidebar + Chat area)
@@ -227,6 +234,7 @@ VITE_SOCKET_URL=https://your-backend.render.com
 - [ ] Protected routes
 
 ### Phase 2 - Real-time Chat
+
 - [ ] Socket.IO connection
 - [ ] Message list with virtualization
 - [ ] Message input component
@@ -234,12 +242,14 @@ VITE_SOCKET_URL=https://your-backend.render.com
 - [ ] Online user presence
 
 ### Phase 3 - Multi-Room
+
 - [ ] Room list in sidebar
 - [ ] Room switching
 - [ ] Room-scoped messages
 - [ ] Join/leave room functionality
 
 ### Phase 4 - Polish
+
 - [ ] Animations (Framer Motion)
 - [ ] Skeleton loaders
 - [ ] Toast notifications
@@ -249,15 +259,18 @@ VITE_SOCKET_URL=https://your-backend.render.com
 ## 🐛 Troubleshooting
 
 ### Tailwind classes not working
+
 - Ensure `@import 'tailwindcss'` is in `index.css`
 - Check that `@tailwindcss/vite` plugin is in `vite.config.ts`
 
 ### Socket.IO connection issues
+
 - Verify `VITE_SOCKET_URL` is set correctly
 - Check CORS configuration on server
 - Ensure server is running
 
 ### Build errors
+
 - Clear `node_modules` and reinstall: `rm -rf node_modules && npm install`
 - Check TypeScript errors: `npm run build`
 
@@ -272,4 +285,4 @@ VITE_SOCKET_URL=https://your-backend.render.com
 
 ---
 
-**Built with ❤️ for EchoRoom**
+**Built with ❤️ for Connexta**

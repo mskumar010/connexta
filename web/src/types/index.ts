@@ -4,8 +4,15 @@ export interface User {
   email: string;
   displayName: string;
   avatarUrl?: string;
-  hasCompletedOnboarding?: boolean;
+
+  lastLocation?: {
+    latitude: number;
+    longitude: number;
+    updatedAt: string;
+  };
+  connectionId?: string;
   createdAt: string;
+  profileColor?: string;
 }
 
 // Room types
@@ -18,6 +25,7 @@ export interface Room {
   members: string[];
   createdBy: string;
   createdAt: string;
+  updatedAt?: string;
 }
 
 // Message types
@@ -26,11 +34,32 @@ export interface Message {
   roomId: string;
   senderId: string;
   text: string;
+  type?: "text" | "location";
+  location?: {
+    latitude: number;
+    longitude: number;
+  };
   createdAt: string;
   seq: number;
+  isMine: boolean;
+  isOptimistic?: boolean;
   isSystemMessage?: boolean;
   parentId?: string;
   replyCount?: number;
+}
+
+// Conversation types
+export interface Conversation {
+  _id: string;
+  participants: User[];
+  lastMessage?: UIMessage;
+  lastMessageAt?: string;
+  type: "dm" | "room";
+  roomId?: string;
+  status: "pending" | "accepted" | "rejected";
+  initiatorId?: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface UIMessage {
@@ -43,6 +72,11 @@ export interface UIMessage {
     avatarUrl?: string;
   };
   text: string;
+  type: "text" | "location";
+  location?: {
+    latitude: number;
+    longitude: number;
+  };
   createdAt: string;
   isMine: boolean;
   isOptimistic?: boolean;

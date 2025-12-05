@@ -1,5 +1,5 @@
-import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { Conversation, UIMessage } from "@/types";
+import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
+import type { Conversation, UIMessage } from "@/types";
 
 interface ConversationsState {
   conversations: Conversation[];
@@ -48,6 +48,25 @@ export const conversationsSlice = createSlice({
         state.conversations.unshift(conversation);
       }
     },
+    updateConversationStatus: (
+      state,
+      action: PayloadAction<{
+        conversationId: string;
+        status: string;
+        conversation: Conversation;
+      }>
+    ) => {
+      const { conversationId, conversation } = action.payload;
+      const index = state.conversations.findIndex(
+        (c) => c._id === conversationId
+      );
+      if (index !== -1) {
+        state.conversations[index] = conversation;
+      } else {
+        // If not found, add it
+        state.conversations.unshift(conversation);
+      }
+    },
     setActiveConversation: (state, action: PayloadAction<string | null>) => {
       state.activeConversationId = action.payload;
       if (action.payload) {
@@ -71,6 +90,7 @@ export const {
   setConversations,
   addConversation,
   updateConversation,
+  updateConversationStatus,
   setActiveConversation,
   incrementUnreadCount,
   setLoading,

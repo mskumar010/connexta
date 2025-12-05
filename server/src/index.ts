@@ -1,6 +1,6 @@
-import dotenv from "dotenv";
+import { env } from "./config/env";
 // Load environment variables immediately
-dotenv.config();
+// dotenv.config(); // Handled in env.ts
 
 import express from "express";
 import { createServer } from "http";
@@ -11,21 +11,19 @@ import { connectDatabase } from "./config/database";
 import { setupSocketHandlers, initializeSequences } from "./socket/handlers";
 import authRoutes from "./routes/auth";
 import roomsRoutes from "./routes/rooms";
-import roomsRoutes from "./routes/rooms";
 import messagesRoutes from "./routes/messages";
 import conversationRoutes from "./routes/conversations";
+import usersRoutes from "./routes/users";
 import { errorHandler } from "./middleware/errorHandler";
 import { seedRooms } from "./scripts/seedRooms";
-
-// Load environment variables
-dotenv.config();
+import { seedUsers } from "./scripts/seedUsers";
 
 const app = express();
 const httpServer = createServer(app);
 
 // CORS configuration
 const corsOptions = {
-  origin: process.env.CORS_ORIGIN || "http://localhost:5173",
+  origin: env.CORS_ORIGIN,
   credentials: true,
 };
 
@@ -40,6 +38,9 @@ const io = new Server(httpServer, {
   transports: ["websocket", "polling"],
 });
 
+// Make io accessible in routes
+app.set("io", io);
+
 // Health check endpoint
 app.get("/health", (_req, res) => {
   res.json({ status: "ok", timestamp: new Date().toISOString() });
@@ -48,8 +49,8 @@ app.get("/health", (_req, res) => {
 // API routes
 app.use("/auth", authRoutes);
 app.use("/rooms", roomsRoutes);
-app.use("/rooms", roomsRoutes);
 app.use("/conversations", conversationRoutes);
+app.use("/users", usersRoutes);
 app.use("/rooms/:roomId/messages", messagesRoutes); // Keep for backward compatibility
 app.use("/conversations/:conversationId/messages", messagesRoutes); // New route for DMs
 
@@ -65,6 +66,9 @@ async function startServer() {
     // Initialize sequence numbers
     await initializeSequences();
 
+    // Verify/Seed default users (X, Y, Z)
+    await seedUsers();
+
     // Seed default rooms
     await seedRooms();
 
@@ -72,11 +76,11 @@ async function startServer() {
     setupSocketHandlers(io);
 
     // Start server
-    const PORT = process.env.PORT || 3000;
+    const PORT = env.PORT;
     httpServer.listen(PORT, () => {
       console.log(`🚀 Server running on port ${PORT}`);
       console.log(`📡 Socket.IO ready`);
-      console.log(`🌍 Environment: ${process.env.NODE_ENV || "development"}`);
+      console.log(`🌍 Environment: ${env.NODE_ENV}`);
     });
   } catch (error) {
     console.error("Failed to start server:", error);
@@ -85,3 +89,17 @@ async function startServer() {
 }
 
 startServer();
+
+// Handle unhandled promise rejections
+process.on("unhandledRejection", (err: Error) => {
+  console.error("UNHANDLED REJECTION! 💥 Shutting down...");
+  console.error(err.name, err.message);
+  process.exit(1);
+});
+
+// Handle uncaught exceptions
+process.on("uncaughtException", (err: Error) => {
+  console.error("UNCAUGHT EXCEPTION! 💥 Shutting down...");
+  console.error(err.name, err.message);
+  process.exit(1);
+});

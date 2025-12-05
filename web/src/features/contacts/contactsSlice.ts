@@ -1,5 +1,5 @@
-import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { User } from "@/types";
+import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
+import type { User } from "@/types";
 
 interface ContactsState {
   contacts: User[];

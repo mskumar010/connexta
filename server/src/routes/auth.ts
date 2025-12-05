@@ -1,202 +1,267 @@
-import { Router } from 'express';
-import bcrypt from 'bcryptjs';
-import { User } from '../models/User';
-import { generateAccessToken, generateRefreshToken, verifyRefreshToken } from '../utils/jwt';
-import { authenticateToken, type AuthRequest } from '../middleware/auth';
-import { AppError } from '../middleware/errorHandler';
+import { Router } from "express";
+import bcrypt from "bcryptjs";
+import { User } from "../models/User";
+import {
+  generateAccessToken,
+  generateRefreshToken,
+  verifyRefreshToken,
+} from "../utils/jwt";
+import { authenticateToken, type AuthRequest } from "../middleware/auth";
+import { AppError } from "../middleware/errorHandler";
 
 const router = Router();
 
 // Register
-router.post('/register', async (req, res, next) => {
-	try {
-		const { email, password, displayName } = req.body;
+router.post("/register", async (req, res, next) => {
+  try {
+    const { email, password, displayName } = req.body;
 
-		if (!email || !password || !displayName) {
-			throw new AppError('Email, password, and display name are required', 400);
-		}
+    if (!email || !password || !displayName) {
+      throw new AppError("Email, password, and display name are required", 400);
+    }
 
-		// Check if user exists
-		const existingUser = await User.findOne({ email: email.toLowerCase() });
-		if (existingUser) {
-			throw new AppError('User with this email already exists', 409);
-		}
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      throw new AppError("Invalid email format", 400);
+    }
 
-		// Hash password
-		const passwordHash = await bcrypt.hash(password, 10);
+    // Check if user exists
+    const existingUser = await User.findOne({ email: email.toLowerCase() });
+    if (existingUser) {
+      throw new AppError("User with this email already exists", 409);
+    }
 
-		// Create user
-		const user = new User({
-			email: email.toLowerCase(),
-			passwordHash,
-			displayName,
-			hasCompletedOnboarding: false,
-		});
+    // Hash password
+    const passwordHash = await bcrypt.hash(password, 10);
 
-		await user.save();
+    // Create user
+    // Generate connectionId
+    // Logic: First 7 chars of cleared username + random alphanumeric to make 10 chars total
+    let connectionIdBase = displayName
+      .replace(/[^a-zA-Z0-9]/g, "")
+      .toLowerCase()
+      .slice(0, 7);
+    const randomLength = 10 - connectionIdBase.length;
+    // Helper to generate random alphanumeric string
+    const generateRandomString = (length: number) => {
+      const chars = "abcdefghijklmnopqrstuvwxyz0123456789";
+      let result = "";
+      for (let i = 0; i < length; i++) {
+        result += chars.charAt(Math.floor(Math.random() * chars.length));
+      }
+      return result;
+    };
 
-		// Generate tokens
-		const payload = { userId: user._id.toString(), email: user.email };
-		const accessToken = generateAccessToken(payload);
-		const refreshToken = generateRefreshToken(payload);
+    let connectionId = connectionIdBase + generateRandomString(randomLength);
 
-		// Set refresh token as httpOnly cookie
-		res.cookie('refreshToken', refreshToken, {
-			httpOnly: true,
-			secure: process.env.NODE_ENV === 'production',
-			sameSite: 'strict',
-			maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-		});
+    // Ensure uniqueness
+    while (await User.findOne({ connectionId })) {
+      connectionId = connectionIdBase + generateRandomString(randomLength);
+    }
 
-		res.status(201).json({
-			user: {
-				_id: user._id.toString(),
-				email: user.email,
-				displayName: user.displayName,
-				avatarUrl: user.avatarUrl,
-				hasCompletedOnboarding: user.hasCompletedOnboarding,
-				createdAt: user.createdAt.toISOString(),
-			},
-			accessToken,
-			refreshToken,
-		});
-	} catch (error) {
-		next(error);
-	}
+    const user = new User({
+      email: email.toLowerCase(),
+      passwordHash,
+      displayName,
+      connectionId,
+      hasCompletedOnboarding: false,
+    });
+
+    await user.save();
+
+    // Generate tokens
+    const payload = { userId: user._id.toString(), email: user.email };
+    const accessToken = generateAccessToken(payload);
+    const refreshToken = generateRefreshToken(payload);
+
+    // Set refresh token as httpOnly cookie
+    res.cookie("refreshToken", refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+    });
+
+    res.status(201).json({
+      user: {
+        _id: user._id.toString(),
+        email: user.email,
+        displayName: user.displayName,
+        connectionId: user.connectionId,
+        avatarUrl: user.avatarUrl,
+        hasCompletedOnboarding: user.hasCompletedOnboarding,
+        createdAt: user.createdAt.toISOString(),
+      },
+      accessToken,
+      refreshToken,
+    });
+  } catch (error) {
+    next(error);
+  }
 });
 
 // Login
-router.post('/login', async (req, res, next) => {
-	try {
-		const { email, password } = req.body;
+router.post("/login", async (req, res, next) => {
+  try {
+    const { email, password } = req.body;
 
-		if (!email || !password) {
-			throw new AppError('Email and password are required', 400);
-		}
+    if (!email || !password) {
+      throw new AppError("Email and password are required", 400);
+    }
 
-		// Find user
-		const user = await User.findOne({ email: email.toLowerCase() });
-		if (!user) {
-			throw new AppError('Invalid email or password', 401);
-		}
+    // Find user
+    const user = await User.findOne({ email: email.toLowerCase() });
+    if (!user) {
+      throw new AppError("Invalid email or password", 401);
+    }
 
-		// Verify password
-		const isValidPassword = await bcrypt.compare(password, user.passwordHash);
-		if (!isValidPassword) {
-			throw new AppError('Invalid email or password', 401);
-		}
+    // Backfill connectionId if missing
+    if (!user.connectionId) {
+      let connectionIdBase = user.displayName
+        .replace(/[^a-zA-Z0-9]/g, "")
+        .toLowerCase()
+        .slice(0, 7);
+      const randomLength = 10 - connectionIdBase.length;
+      const generateRandomString = (length: number) => {
+        const chars = "abcdefghijklmnopqrstuvwxyz0123456789";
+        let result = "";
+        for (let i = 0; i < length; i++) {
+          result += chars.charAt(Math.floor(Math.random() * chars.length));
+        }
+        return result;
+      };
 
-		// Generate tokens
-		const payload = { userId: user._id.toString(), email: user.email };
-		const accessToken = generateAccessToken(payload);
-		const refreshToken = generateRefreshToken(payload);
+      let connectionId = connectionIdBase + generateRandomString(randomLength);
+      while (await User.findOne({ connectionId })) {
+        connectionId = connectionIdBase + generateRandomString(randomLength);
+      }
+      user.connectionId = connectionId;
+      await user.save();
+    }
 
-		// Set refresh token as httpOnly cookie
-		res.cookie('refreshToken', refreshToken, {
-			httpOnly: true,
-			secure: process.env.NODE_ENV === 'production',
-			sameSite: 'strict',
-			maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-		});
+    // Verify password
+    const isValidPassword = await bcrypt.compare(password, user.passwordHash);
+    if (!isValidPassword) {
+      throw new AppError("Invalid email or password", 401);
+    }
 
-		res.json({
-			user: {
-				_id: user._id.toString(),
-				email: user.email,
-				displayName: user.displayName,
-				avatarUrl: user.avatarUrl,
-				hasCompletedOnboarding: user.hasCompletedOnboarding,
-				createdAt: user.createdAt.toISOString(),
-			},
-			accessToken,
-			refreshToken,
-		});
-	} catch (error) {
-		next(error);
-	}
+    // Generate tokens
+    const payload = { userId: user._id.toString(), email: user.email };
+    const accessToken = generateAccessToken(payload);
+    const refreshToken = generateRefreshToken(payload);
+
+    // Set refresh token as httpOnly cookie
+    res.cookie("refreshToken", refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+    });
+
+    res.json({
+      user: {
+        _id: user._id.toString(),
+        email: user.email,
+        displayName: user.displayName,
+        connectionId: user.connectionId,
+        avatarUrl: user.avatarUrl,
+        hasCompletedOnboarding: user.hasCompletedOnboarding,
+        createdAt: user.createdAt.toISOString(),
+      },
+      accessToken,
+      refreshToken,
+    });
+  } catch (error) {
+    next(error);
+  }
 });
 
 // Refresh token
-router.post('/refresh', async (req, res, next) => {
-	try {
-		const refreshToken = req.cookies.refreshToken || req.body.refreshToken;
+router.post("/refresh", async (req, res, next) => {
+  try {
+    const refreshToken = req.cookies?.refreshToken || req.body?.refreshToken;
 
-		if (!refreshToken) {
-			throw new AppError('Refresh token required', 401);
-		}
+    if (!refreshToken) {
+      throw new AppError("Refresh token required", 401);
+    }
 
-		// Verify refresh token
-		const payload = verifyRefreshToken(refreshToken);
+    // Verify refresh token
+    const payload = verifyRefreshToken(refreshToken);
 
-		// Generate new access token
-		const accessToken = generateAccessToken(payload);
+    // Generate new access token
+    const accessToken = generateAccessToken(payload);
 
-		res.json({ accessToken });
-	} catch (error) {
-		next(error);
-	}
+    res.json({ accessToken });
+  } catch (error) {
+    next(error);
+  }
 });
 
 // Logout
-router.post('/logout', authenticateToken, (_req, res) => {
-	res.clearCookie('refreshToken');
-	res.json({ message: 'Logged out successfully' });
+router.post("/logout", authenticateToken, (_req, res) => {
+  res.clearCookie("refreshToken");
+  res.json({ message: "Logged out successfully" });
 });
 
 // Get current user
-router.get('/me', authenticateToken, async (req: AuthRequest, res, next) => {
-	try {
-		const user = await User.findById(req.userId).select('-passwordHash');
-		if (!user) {
-			throw new AppError('User not found', 404);
-		}
+router.get("/me", authenticateToken, async (req: AuthRequest, res, next) => {
+  try {
+    const user = await User.findById(req.userId).select("-passwordHash");
+    if (!user) {
+      throw new AppError("User not found", 404);
+    }
 
-		res.json({
-			_id: user._id.toString(),
-			email: user.email,
-			displayName: user.displayName,
-			avatarUrl: user.avatarUrl,
-			hasCompletedOnboarding: user.hasCompletedOnboarding,
-			createdAt: user.createdAt.toISOString(),
-		});
-	} catch (error) {
-		next(error);
-	}
+    res.json({
+      _id: user._id.toString(),
+      email: user.email,
+      displayName: user.displayName,
+      connectionId: user.connectionId,
+      avatarUrl: user.avatarUrl,
+      hasCompletedOnboarding: user.hasCompletedOnboarding,
+      createdAt: user.createdAt.toISOString(),
+    });
+  } catch (error) {
+    next(error);
+  }
 });
 
 // Update current user
-router.put('/me', authenticateToken, async (req: AuthRequest, res, next) => {
-	try {
-		const { displayName, avatarUrl } = req.body;
+router.put("/me", authenticateToken, async (req: AuthRequest, res, next) => {
+  try {
+    const { displayName, avatarUrl, profileColor } = req.body;
 
-		if (!displayName) {
-			throw new AppError('Display name is required', 400);
-		}
+    if (!displayName) {
+      throw new AppError("Display name is required", 400);
+    }
 
-		const user = await User.findById(req.userId);
-		if (!user) {
-			throw new AppError('User not found', 404);
-		}
+    const user = await User.findById(req.userId);
+    if (!user) {
+      throw new AppError("User not found", 404);
+    }
 
-		user.displayName = displayName;
-		if (avatarUrl !== undefined) {
-			user.avatarUrl = avatarUrl;
-		}
+    user.displayName = displayName;
+    if (avatarUrl !== undefined) {
+      user.avatarUrl = avatarUrl;
+    }
+    if (profileColor !== undefined) {
+      user.profileColor = profileColor;
+    }
 
-		await user.save();
+    await user.save();
 
-		res.json({
-			_id: user._id.toString(),
-			email: user.email,
-			displayName: user.displayName,
-			avatarUrl: user.avatarUrl,
-			hasCompletedOnboarding: user.hasCompletedOnboarding,
-			createdAt: user.createdAt.toISOString(),
-		});
-	} catch (error) {
-		next(error);
-	}
+    res.json({
+      _id: user._id.toString(),
+      email: user.email,
+      displayName: user.displayName,
+      connectionId: user.connectionId,
+      avatarUrl: user.avatarUrl,
+      hasCompletedOnboarding: user.hasCompletedOnboarding,
+      profileColor: user.profileColor,
+      createdAt: user.createdAt.toISOString(),
+    });
+  } catch (error) {
+    next(error);
+  }
 });
 
 export default router;
-
