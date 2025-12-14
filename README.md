@@ -157,9 +157,10 @@ connexta/
 └── assets/              # Project images and resources
 ```
 
-## 📝 License
+## 📄 License
 
-Distributed under the MIT License. See `LICENSE` for more information.
+This project is licensed under the [GNU General Public License v3.0](LICENSE).
+`LICENSE` for more information.
 
 ---
 
